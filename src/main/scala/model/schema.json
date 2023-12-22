@@ -1,0 +1,135 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$ref": "#/definitions/Welcome8",
+    "definitions": {
+        "Welcome8": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "BPM": {
+                    "type": "integer"
+                },
+                "lengthLimitInSeconds": {
+                    "type": "number"
+                },
+                "soundFontPath": {
+                    "type": "string"
+                },
+                "tracks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Track"
+                    }
+                },
+                "author": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "PPQ": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "BPM",
+                "tracks"
+            ],
+            "title": "Composition"
+        },
+        "Track": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "channel": {
+                    "type": "integer"
+                },
+                "bank": {
+                    "type": "integer"
+                },
+                "instrument": {
+                    "type": "integer"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/Version"
+                    }
+                },
+                "active": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "channel",
+                "instrument",
+                "versions"
+            ],
+            "title": "Track"
+        },
+        "Version": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "scale": {
+                    "$ref": "#/definitions/Scale"
+                },
+                "scaleNote": {
+                    "type": "string"
+                },
+                "midiNote": {
+                    "type": "string"
+                },
+                "timing": {
+                    "type": "string"
+                },
+                "startAt": {
+                    "type": "number"
+                },
+                "duration": {
+                    "type": "string"
+                },
+                "velocity": {
+                    "type": "string"
+                },
+                "active": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "duration",
+                "timing"
+            ],
+            "title": "Version"
+        },
+        "Scale": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "degrees": {
+                    "type": "string"
+                },
+                "rootMidiNote": {
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "degrees",
+                "rootMidiNote"
+            ],
+            "title": "Scale"
+        }
+    }
+}
