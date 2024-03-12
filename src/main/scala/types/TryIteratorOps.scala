@@ -2,21 +2,18 @@ package types
 
 import util._
 
-/**
-  * Events as iterators
-  */
 object TryIteratorOps {
 
-  def fromSeqOfEvents(events: Seq[Event]): TryIterator[Event] = Try(events.iterator)
+  def fromSeq[A](seq: Seq[A]): TryIterator[A] = Try(seq.iterator)
 
-  implicit class EventsOps(events: TryIterator[Event]) {
-    def ++(newEvents: TryIterator[Event]): TryIterator[Event] = mergeEvents(Seq(events, newEvents))
-    def ++(newEvents: Seq[Event]): TryIterator[Event] =
-      mergeEvents(Seq(events, TryIteratorOps.fromSeqOfEvents(newEvents)))
+  implicit class EventsOps[A](events: TryIterator[A]) {
+    def ++(newEvents: TryIterator[A]): TryIterator[A] = merge(Seq(events, newEvents))
+    def ++(newEvents: Seq[A]): TryIterator[A] =
+      merge(Seq(events, TryIteratorOps.fromSeq(newEvents)))
   }
 
-  def mergeEvents(events: Seq[TryIterator[Event]]): TryIterator[Event] =
-    events.foldLeft[TryIterator[Event]](Try(Iterator.empty[NoteEvent])) {
+  def merge[A](events: Seq[TryIterator[A]]): TryIterator[A] =
+    events.foldLeft[TryIterator[A]](Try(Iterator.empty[A])) {
       case (Failure(exception), _)           => Failure(exception)
       case (_, Failure(exception))           => Failure(exception)
       case (Success(accIter), Success(iter)) => Success(accIter ++ iter)

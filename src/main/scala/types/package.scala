@@ -1,31 +1,23 @@
-import core.Exception.ArgError
+import eu.timepit.refined.api.Refined
+import eu.timepit.refined.numeric.{Interval, Positive}
 
-import java.io.File
+import javax.sound.midi.MidiEvent
 import scala.language.implicitConversions
 import scala.util.Try
 
 package object types {
 
-  val DEFAULT_BPM = 120
-  val DEFAULT_PPQ = 480
-  val DEFAULT_LENGTH_LIMIT = 600
+  type Channel = Int Refined Interval.ClosedOpen[0, 16]
+  type Bpm = Int Refined Positive
+  type Ppq = Int Refined Positive
+  type CompositionLengthLimit = Int Refined Positive
+  type Midi = Int Refined Interval.ClosedOpen[0, 256]
 
   type TryIterator[A] = Try[Iterator[A]]
   type InterpreterTree = scala.reflect.runtime.universe.Tree
-
-  trait Constrained[A] { def constraint(value: A): Boolean }
-  trait MidiConstraint extends Constrained[Int]
-  implicit def positiveConstraint[A](implicit n: Numeric[A]): PositiveConstraint[A] =
-    (value: A) => n.compare(value, n.zero) > 0
-  implicit val midiConstraint: MidiConstraint =
-    (value: Int) => (0 until 256) contains value
-
-  trait Channel {
-    def channel: Int
-    def validateChannel(): Unit =
-      if (!((0 until 16) contains channel))
-        throw ArgError(s"Channel $channel not in (0, 16) range")
-  }
+  type TrackName = String
+  type TrackIterator = TryIterator[MidiEvent]
+  type TrackComputation = () => TrackIterator
 
   implicit def intToMidi(int: Int): MidiValue = MidiValue(int)
   implicit def midiToInt(midiValue: MidiValue): Int = midiValue.value

@@ -6,12 +6,13 @@ import core.Utils.tickToSecond
 import core.{Interpreter, Utils}
 import types._
 
+import javax.sound.midi.{MidiEvent, ShortMessage}
 import javax.sound.midi.ShortMessage._
 import scala.reflect.runtime.universe._
 import scala.util.{Failure, Success, Try}
 
 case class VersionItem(note: PatternValue[InputValue], duration: Long, timing: Long, velocity: MidiValue) {
-  def toEvents(channel: Int, scale: Option[Scale]): Seq[Event] =
+  def toEvents(channel: Channel, scale: Option[Scale]): Seq[Event] =
     for {
       chordNote <- note.toSeq.map(_.toMidi(scale))
       if duration > 0 && velocity > 0
@@ -38,7 +39,31 @@ case class TrackVersion(
   require(!timing.isBlank, s"$name. Timing can't be empty")
   require(!duration.isBlank, s"$name. Duration can't be empty")
 
-  def version(ppq: Int): TryIterator[VersionItem] =
+  private def midiMessage(command: MidiValue, channel: Channel, data1: MidiValue, data2: MidiValue): ShortMessage = {
+    val msg = new ShortMessage()
+    msg.setMessage(command.value, channel.value, data1.value, data2.value)
+    msg
+  }
+
+  private def makeMidiMessages(message: Message): Seq[ShortMessage] =
+    message match {
+      case NoteMessage(command, channel, note, velocity) =>
+        Seq(midiMessage(command, channel, note, velocity))
+      case ProgramMessage(channel, bank, program) =>
+        Seq(
+          midiMessage(MidiValue(CONTROL_CHANGE), channel, 0, bank.value >> 7),
+          midiMessage(MidiValue(CONTROL_CHANGE), channel, 32, bank.value & 0x7f),
+          midiMessage(MidiValue(PROGRAM_CHANGE), channel, program, 0)
+        )
+      case ControlMessage(channel, control, value) =>
+        Seq(midiMessage(CONTROL_CHANGE, channel, control, value))
+    }
+
+  def makeMidiEvents(event: Event): Seq[MidiEvent] = {
+    makeMidiMessages(event.message).map(msg => new MidiEvent(msg, event.tick))
+  }
+
+  def version(ppq: Ppq): TryIterator[VersionItem] =
     for {
       notes <- getNote
       durations <- getDuration(ppq)
@@ -49,8 +74,11 @@ case class TrackVersion(
         yield VersionItem(note, duration, timing, velocity)
     }
 
-  def events(ppq: Int, channel: Int): TryIterator[Event] =
+  def events(ppq: Ppq, channel: Channel): TryIterator[Event] =
     version(ppq).map(iter => iter.flatMap(item => item.toEvents(channel, scale)))
+
+  def midiEvents(ppq: Ppq, channel: Channel): TryIterator[MidiEvent] =
+    events(ppq, channel).map(iter => iter.flatMap(makeMidiEvents))
 
 //  def getNoteEvents(implicit opt: PlayOptions, channel: Int = 0): TryIterator[Event] = Try {
 //    implicit val scale: Option[Scale] = this.scale
@@ -70,7 +98,7 @@ case class TrackVersion(
 //  }
 
   implicit class DoubleOps(d: Double) {
-    def toTick(implicit ppq: Int): Long = Utils.durToTick(d, ppq)
+    def toTick(implicit ppq: Ppq): Long = Utils.durToTick(d, ppq)
   }
 
   implicit val versionName: String = name
@@ -90,7 +118,7 @@ case class TrackVersion(
     }
   }
 
-  def getTiming(implicit ppq: Int): TryIterator[Long] = {
+  def getTiming(implicit ppq: Ppq): TryIterator[Long] = {
     interpretIterator[Double](timing)
       .map(iter => iter.map(castToNumber[Double]))
       .map(iter =>
@@ -120,7 +148,7 @@ case class TrackVersion(
       Failure(ArgError("Either scaleNote or midiNote must be defined at the same time"))
   }
 
-  def getDuration(ppq: Int): TryIterator[Long] =
+  def getDuration(ppq: Ppq): TryIterator[Long] =
     interpretIterator[Double](duration)
       .map(iter => iter.map(castToNumber[Double]))
       .map(iter => iter.map(_.toTick(ppq)))

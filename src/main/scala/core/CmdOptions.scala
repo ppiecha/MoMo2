@@ -10,22 +10,24 @@ case object Stop extends Action
 case object Exit extends Action
 case object DoNothing extends Action
 
-case class Config(yamlFile: Option[File] = None, action: Action = DoNothing)
+case class CmdConfig(compositionFile: Option[File] = None,
+                     soundFontFile: Option[File] = None,
+                     action: Action = DoNothing)
 
 object CmdOptions {
 
-  val builder: OParserBuilder[Config] = OParser.builder[Config]
-  val parser: OParser[Unit, Config] = {
+  val builder: OParserBuilder[CmdConfig] = OParser.builder[CmdConfig]
+  val parser: OParser[Unit, CmdConfig] = {
     import builder._
     def validateFile(f: File): Either[String, Unit] =
       if (f.exists()) success else failure(s"File $f doesn't exist")
     OParser.sequence(
       programName("MoMo"),
       head("MoMo", "version 0.1.0 Copyright 2023 Piotr Piecha"),
-      opt[File]('y', "yaml")
+      opt[File]('c', "cmp")
         .valueName("<file>")
         .validate(validateFile)
-        .action((f, c) => c.copy(yamlFile = Some(f)))
+        .action((f, c) => c.copy(compositionFile = Some(f)))
         .text("YAML file with composition"),
 //      opt[File]('f', "font")
 //        .valueName("<file>")

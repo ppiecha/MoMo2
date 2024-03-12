@@ -7,8 +7,8 @@ import core.Exception.ArgError
 sealed trait InputValue {
   def toMidi(implicit scale: Option[Scale]): MidiValue
 }
-case class MidiValue(value: Int)(implicit c: MidiConstraint) extends InputValue {
-  require(c.constraint(value), s"$value not in (0, 255) range")
+case class MidiValue(value: Int) extends InputValue {
+  //require(c.constraint(value), s"$value not in (0, 255) range")
   def toMidi(implicit scale: Option[Scale]): MidiValue = this
 }
 case class IntValue(value: Int) extends InputValue {

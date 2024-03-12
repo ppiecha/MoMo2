@@ -1,7 +1,7 @@
 package types
 
 /**
-  * MIDI events and messages
+  * Events and messages
   */
 sealed trait Event {
   def message: Message
@@ -11,9 +11,7 @@ case class NoteEvent(message: NoteMessage, tick: Long) extends Event
 case class ProgramEvent(message: ProgramMessage, tick: Long) extends Event
 case class ControlEvent(message: ControlMessage, tick: Long) extends Event
 
-sealed trait Message extends Channel {
-  validateChannel()
-}
-case class NoteMessage(command: MidiValue, channel: Int, note: MidiValue, velocity: MidiValue) extends Message
-case class ProgramMessage(channel: Int, bank: MidiValue, program: MidiValue) extends Message
-case class ControlMessage(channel: Int, control: MidiValue, value: MidiValue) extends Message
+sealed trait Message
+case class NoteMessage(command: MidiValue, channel: Channel, note: MidiValue, velocity: MidiValue) extends Message
+case class ProgramMessage(channel: Channel, bank: MidiValue, program: MidiValue) extends Message
+case class ControlMessage(channel: Channel, control: MidiValue, value: MidiValue) extends Message

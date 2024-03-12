@@ -1,16 +1,24 @@
 package model
 
+import types.TryIteratorOps.merge
 import types._
+
+import javax.sound.midi.MidiEvent
 
 case class Track(
     name: String,
-    channel: Int,
-    bank: Int,
-    instrument: Int,
+    channel: Channel,
+    bank: Midi,
+    instrument: Midi,
     versions: List[TrackVersion],
     active: Option[Boolean]
-) extends Channel {
-  require((0 until 256) contains instrument, s"Instrument midi value $instrument not in (0, 255) range")
+) {
+
+  val activeVersions: List[TrackVersion] = versions.filter(_.active.getOrElse(true))
+
+  def events(ppq: Ppq): TryIterator[Event] = merge(activeVersions.map(_.events(ppq, channel)))
+
+  def midiEvents(ppq: Ppq): TryIterator[MidiEvent] = merge(activeVersions.map(_.midiEvents(ppq, channel)))
 
 //  def getNoteEvents(implicit opt: PlayOptions, channel: Int = 0): TryIterator[Event] = {
 //    val trackEvents = versions.filter(_.active.getOrElse(true)).map(_.getNoteEvents(opt, this.channel))

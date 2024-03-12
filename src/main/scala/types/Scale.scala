@@ -2,10 +2,9 @@ package types
 
 import scala.math.abs
 
-case class Scale(degrees: String, rootMidiNote: Int)(implicit c: MidiConstraint) {
-  require(c.constraint(rootMidiNote), s"$rootMidiNote not in (0, 255) range")
+case class Scale(degrees: String, rootMidiNote: Midi) {
 
-  val scaleDegrees = degrees.split(Array(' ', ',', ';')).map(_.trim.toInt).toSeq
+  private val scaleDegrees = degrees.split(Array(' ', ',', ';')).map(_.trim.toInt).toSeq
 
   def toMidiValue(step: Int): MidiValue = {
     val degrees = scaleDegrees
@@ -15,8 +14,8 @@ case class Scale(degrees: String, rootMidiNote: Int)(implicit c: MidiConstraint)
     val normStep = step % numOfSteps
     val scale = 0 +: degrees :+ 0
     val transformed =
-      if (normStep >= 0) rootMidiNote + (octaves * pitchesPerOctave) + scale(normStep)
-      else rootMidiNote + ((octaves - 1) * pitchesPerOctave) + scale.reverse(abs(normStep))
+      if (normStep >= 0) rootMidiNote.value + (octaves * pitchesPerOctave) + scale(normStep)
+      else rootMidiNote.value + ((octaves - 1) * pitchesPerOctave) + scale.reverse(abs(normStep))
     transformed
   }
 }
