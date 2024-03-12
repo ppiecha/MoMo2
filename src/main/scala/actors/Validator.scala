@@ -22,11 +22,11 @@ object Validator {
   ) extends Response
   final case class Error(exception: Throwable) extends Response
 
-  def apply(): Behavior[Command] = {
-    ???
-  }
+//  def apply(): Behavior[Command] = {
+//    ???
+//  }
 
-  def validateArgs(args: List[String]): Try[CmdConfig] = ???
+  //def validateArgs(args: List[String]): Try[CmdConfig] = ???
 
   //def validateYaml(config: CmdConfig): Try[Composition] = ???
 

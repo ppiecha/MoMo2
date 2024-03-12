@@ -20,7 +20,7 @@ object CmdConfig {
     Behaviors.receive { (context, message) =>
       message match {
         case Args(args, replyTo) =>
-          def log(msg: String) = replyTo ! Error(new scala.Error(msg))
+          def log(msg: String): Unit = replyTo ! Error(new scala.Error(msg))
           context.log.info(args.toString)
           OParser.runParser(core.CmdOptions.parser, args, core.CmdConfig()) match {
             case (Some(config), _) =>

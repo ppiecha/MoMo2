@@ -24,10 +24,10 @@ object SequenceParser {
 
   final case class Error(exception: Throwable) extends Response
 
-  def apply(): Behavior[Command] = {
-    ???
-  }
-
-  def validateArgs(args: List[String]): Try[CmdConfig] = ???
+//  def apply(): Behavior[Command] = {
+//    ???
+//  }
+//
+//  def validateArgs(args: List[String]): Try[CmdConfig] = ???
 
 }
