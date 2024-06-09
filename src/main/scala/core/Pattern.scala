@@ -5,6 +5,8 @@ import core.Exception.ArgError
 import scala.reflect.runtime.universe._
 import scala.util.Random.shuffle
 import types._
+import types.MidiValue
+import music.MusicItem
 
 object Pattern {
 
@@ -65,7 +67,8 @@ object Pattern {
           case t if t =:= typeOf[PatternValue[MidiValue]] => SingleValue(MidiValue(x()))
           case t if t =:= typeOf[PatternValue[IntValue]]  => SingleValue(IntValue(x()))
         }
-      case x => throw ArgError(s"Unsupported type ${x.getClass.getName}")
+      case x: String if x == "r" => println("Rest found", x)
+      case x                     => throw ArgError(s"Unsupported type ${x.getClass.getName}")
     }
     val res = casted.asInstanceOf[A]
     res
@@ -82,14 +85,37 @@ object Pattern {
     * @return
     *   iterator which generates sequence of values
     */
-  def seq[A](sequence: Seq[A], repeat: Long = 1, offset: Int = 0): Iterator[A] = {
-    val (h, t) =
-      sequence.splitAt(if (offset < 0) sequence.length + offset else offset)
-    Iterator.unfold((t ++ h, repeat * sequence.length)) {
+//  def seq[A](sequence: Seq[A], repeat: Long = 1, offset: Int = 0): Iterator[A] = {
+//    val (h, t) =
+//      sequence.splitAt(if (offset < 0) sequence.length + offset else offset)
+//    Iterator.unfold((t ++ h, repeat * sequence.length)) {
+//      case (_, r) if r == 0 => None
+//      case (s, r)           => Some(s.head, (s.tail :+ s.head, r - 1))
+//    }
+//  }
+
+  def seq(repeat: Int, offset: Int, sequence: Seq[MusicItem]): Iterator[MusicItem] = {
+    val (h, t) = sequence.splitAt(if (offset < 0) sequence.length + offset else offset)
+    Iterator.unfold[MusicItem, (Seq[MusicItem], Int)]((t ++ h, repeat * sequence.length)) {
       case (_, r) if r == 0 => None
       case (s, r)           => Some(s.head, (s.tail :+ s.head, r - 1))
     }
   }
+
+  def seq(repeat: Int, sequence: Seq[MusicItem]): Iterator[MusicItem] =
+    seq(repeat, 0, sequence)
+
+  def seq(sequence: Seq[MusicItem]): Iterator[MusicItem] =
+    seq(1, sequence)
+
+  def seq(repeat: Int, offset: Int, elem1: MusicItem, elems: MusicItem*): Iterator[MusicItem] =
+    seq(repeat, offset, elem1 +: elems)
+
+  def seq(repeat: Int, elem1: MusicItem, elems: MusicItem*): Iterator[MusicItem] =
+    seq(repeat, 0, elem1, elems: _*)
+
+  def seq(elem1: MusicItem, elems: MusicItem*): Iterator[MusicItem] =
+    seq(1, elem1, elems: _*)
 
   /** Creates iterator which return number of items instead of the number of complete cycles
     *

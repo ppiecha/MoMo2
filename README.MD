@@ -44,6 +44,9 @@ comp.tracks = [{
 ```
 
 ## TO DO
+- simple and extensible interface to represent the notes
+- minimal option to play track version (all params in config)
+- seq functions taking varargs not sequences
 - finish readme
 - actors diagram
 

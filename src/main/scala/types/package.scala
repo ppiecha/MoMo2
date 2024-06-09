@@ -1,5 +1,5 @@
 import eu.timepit.refined.api.Refined
-import eu.timepit.refined.numeric.{Interval, Positive}
+import eu.timepit.refined.numeric.{Interval, NonNegative, Positive}
 
 import javax.sound.midi.MidiEvent
 import scala.language.implicitConversions
@@ -12,6 +12,7 @@ package object types {
   type Ppq = Int Refined Positive
   type CompositionLengthLimit = Int Refined Positive
   type Midi = Int Refined Interval.ClosedOpen[0, 256]
+  type Duration = Double Refined NonNegative
 
   type TryIterator[A] = Try[Iterator[A]]
   type InterpreterTree = scala.reflect.runtime.universe.Tree
